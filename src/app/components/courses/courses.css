@@ -1,0 +1,234 @@
+.courses-wrapper {
+  background-color: var(--bg-cream);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.courses-header {
+  padding: 50px 50px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.courses-heading {
+  font-size: 4rem;
+  letter-spacing: -0.05em;
+  line-height: 1;
+  margin-bottom: 10px;
+}
+
+.courses-sub {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  line-height: 1.6;
+  max-width: 600px;
+}
+
+.filter-bar {
+  display: flex;
+  gap: 12px;
+  padding: 0 50px 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  font-family: var(--font-main);
+  font-weight: 900;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  padding: 10px 20px;
+  border: var(--border-thick);
+  background-color: var(--neutral-white);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  letter-spacing: 0.05em;
+}
+
+.filter-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 2px 2px 0 #000;
+}
+
+.filter-btn.active {
+  background-color: var(--accent-yellow);
+  box-shadow: 3px 3px 0 #000;
+}
+
+.catalog-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  padding: 0 50px 50px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.course-catalog-card {
+  background-color: var(--neutral-white);
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.catalog-thumb {
+  height: 140px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.thumb-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 8px;
+  padding: 10px;
+  flex-wrap: wrap;
+}
+
+.enrolled-badge {
+  font-size: 0.65rem;
+  font-weight: 900;
+  background-color: var(--neutral-dark);
+  color: var(--neutral-white);
+  padding: 4px 10px;
+  border: 1px solid #fff;
+}
+
+.offline-badge {
+  font-size: 0.65rem;
+  font-weight: 900;
+  background-color: #16a34a;
+  color: #fff;
+  padding: 4px 10px;
+  border: 1px solid #fff;
+}
+
+.soon-badge {
+  font-size: 0.65rem;
+  font-weight: 900;
+  background-color: var(--accent-red);
+  color: #fff;
+  padding: 4px 10px;
+  border: 1px solid #fff;
+}
+
+.thumb-icon {
+  opacity: 0.7;
+}
+
+.thumb-lock {
+  position: absolute;
+  bottom: 10px;
+  right: 14px;
+  font-size: 1.5rem;
+  opacity: 0.7;
+}
+
+.catalog-info {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.catalog-title {
+  font-size: 1.2rem;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.catalog-desc {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.catalog-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.meta-item strong {
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+}
+
+.catalog-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.progress-label {
+  font-size: 0.75rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.catalog-footer {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--card-gray);
+}
+
+.catalog-footer .btn-neo {
+  font-size: 0.8rem;
+  padding: 8px 18px;
+}
+
+.btn-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.downloaded-tag {
+  font-size: 0.7rem;
+  font-weight: 900;
+  color: #16a34a;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.download-hint {
+  font-size: 0.7rem;
+  font-weight: 900;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.empty-catalog {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+@media (max-width: 900px) {
+  .courses-header { padding: 30px 20px 20px; }
+  .courses-heading { font-size: 2.8rem; }
+  .filter-bar { padding: 0 20px 20px; }
+  .catalog-grid { grid-template-columns: 1fr; padding: 0 20px 30px; }
+  .catalog-meta { grid-template-columns: 1fr; }
+}
