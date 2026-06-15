@@ -2,7 +2,7 @@ export const SpanishTranslations = {
   // Navigation & Shell
   'nav.home': 'Inicio',
   'nav.courses': 'Cursos',
-  'nav.login': 'LOGIN',
+  'nav.login': 'INICIAR SESION',
   'nav.logout': 'Cerrar Sesión',
   'nav.profile': 'Perfil',
 
@@ -253,5 +253,72 @@ export const SpanishTranslations = {
   'footer.info': '© 2026 RURAL-TECH EDUCA. MODO OFFLINE ACTIVADO.',
   'footer.support': 'SOPORTE TÉCNICO',
   'footer.guide': 'GUÍA DE USO',
-  'footer.contact': 'CONTACTO'
+  'footer.contact': 'CONTACTO',
+
+  // Navigation — new items
+  'nav.certificates': 'Certificados',
+  'nav.notifications': 'Notificaciones',
+  'nav.settings': 'Configuración',
+
+  // Course back link
+  'courses.back': 'Volver al Catálogo',
+
+  // Course Detail Page
+  'detail.tab_overview': 'DESCRIPCIÓN',
+  'detail.tab_modules': 'MÓDULOS',
+  'detail.tab_instructor': 'INSTRUCTOR',
+  'detail.about_course': 'Sobre este Curso',
+  'detail.what_learn': 'Lo que aprenderás',
+  'detail.requirements': 'Requisitos',
+  'detail.enrolled': 'Inscrito en este Curso',
+  'detail.progress': 'Progreso',
+  'detail.modules_done': 'módulos completados',
+  'detail.continue_btn': 'CONTINUAR',
+  'detail.enroll_btn': 'INSCRIBIRSE GRATIS',
+  'detail.enroll_success': '¡Inscripción exitosa! Ahora puedes empezar.',
+  'detail.download_offline': 'DESCARGAR OFFLINE',
+  'detail.downloading': 'Descargando...',
+  'detail.includes': 'Este curso incluye',
+
+  // Certificates Page
+  'certs.title': 'Mis Certificados',
+  'certs.subtitle': 'Certificados digitales de los cursos completados.',
+  'certs.certifies': 'SE CERTIFICA QUE',
+  'certs.completed': 'ha completado satisfactoriamente el curso:',
+  'certs.download': 'DESCARGAR CERTIFICADO',
+  'certs.empty_title': 'Sin Certificados Aún',
+  'certs.empty_desc': 'Completa un curso para obtener tu primer certificado digital.',
+  'certs.go_courses': 'Explorar Cursos',
+
+  // Notifications Page
+  'notif.title': 'Notificaciones',
+  'notif.subtitle': 'Mantente al día con tu progreso y novedades.',
+  'notif.mark_all': 'Marcar todo leído',
+  'notif.clear_all': 'Limpiar todo',
+  'notif.empty_title': 'Sin Notificaciones',
+  'notif.empty_desc': 'Aquí aparecerán tus alertas de cursos, descargas y sincronizaciones.',
+
+  // Settings Page
+  'settings.title': 'Configuración',
+  'settings.subtitle': 'Personaliza tu experiencia en Rural-Tech.',
+  'settings.language': 'Idioma',
+  'settings.default_lang': 'Idioma predeterminado',
+  'settings.notifications_title': 'Notificaciones',
+  'settings.notifications_enabled': 'Activar notificaciones',
+  'settings.sync_title': 'Sincronización',
+  'settings.auto_sync': 'Sincronización automática',
+  'settings.wifi_only': 'Descargar solo en WiFi',
+  'settings.accessibility': 'Accesibilidad',
+  'settings.font_size': 'Tamaño de fuente',
+  'settings.save': 'Guardar Cambios',
+  'settings.saved': 'Configuración guardada.',
+  'settings.reset': 'Restablecer',
+  'settings.reset_done': 'Configuración restablecida.',
+  'settings.clear_data': 'Limpiar datos de caché',
+
+  // Profile — new items
+  'profile.change_password': 'Cambiar Contraseña',
+  'profile.new_password': 'Nueva Contraseña',
+  'profile.confirm_password': 'Confirmar Contraseña',
+  'profile.password_changed': 'Contraseña actualizada.'
 };

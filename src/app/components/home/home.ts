@@ -18,8 +18,8 @@ export class HomeComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
-  startOffline(): void {
-    const result = this.auth.loginAsGuest('home');
+  async startOffline(): Promise<void> {
+    const result = await this.auth.loginAsGuest('home');
     if (result.success) {
       this.router.navigate(['/dashboard']);
     }
@@ -27,5 +27,10 @@ export class HomeComponent {
 
   startNow(): void {
     this.router.navigate(['/login']);
+  }
+
+  /** Navigate to courses filtered by category */
+  exploreCourses(category: string): void {
+    this.router.navigate(['/courses'], { queryParams: { category } });
   }
 }

@@ -57,4 +57,124 @@
   .dh{padding:30px 20px 20px}
   .dhg{font-size:3rem}
   .cg{grid-template-columns:1fr}
+  .rec-grid{grid-template-columns:1fr !important}
+}
+
+/* Welcome card for new users */
+.welcome-card {
+  background: linear-gradient(135deg, var(--accent-yellow) 0%, #fbbf24 100%) !important;
+}
+
+/* Recommended courses grid */
+.rec-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.rec-card {
+  background-color: var(--neutral-white);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.rec-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 10px 10px 0 #000;
+}
+
+.rec-header {
+  padding: 16px 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 55px;
+}
+
+.rec-cat-icon {
+  font-size: 1.8rem;
+}
+
+.rec-level {
+  font-size: 0.65rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  background-color: rgba(255,255,255,0.25);
+  color: #fff;
+  padding: 3px 10px;
+  border: 1px solid rgba(255,255,255,0.4);
+  letter-spacing: 0.05em;
+}
+
+.rec-body {
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rec-title {
+  font-size: 0.95rem;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.rec-desc {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.rec-meta {
+  display: flex;
+  gap: 14px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #555;
+}
+
+.rec-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+  padding-top: 10px;
+  border-top: 1px solid var(--card-gray, #eee);
+}
+
+.rec-instructor {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.btn-rec-enroll {
+  font-size: 0.72rem;
+  padding: 6px 14px;
+  background-color: #16a34a !important;
+  color: #fff !important;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-rec-enroll:hover {
+  background-color: #15803d !important;
+  transform: translate(-1px, -1px);
+  box-shadow: 2px 2px 0 #000;
+}
+
+.empty-downloads {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-align: center;
+  padding: 10px 0;
 }

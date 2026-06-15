@@ -3,7 +3,7 @@ import { openDB, IDBPDatabase } from 'idb';
 
 export interface SyncAction {
   id?: number;
-  action: 'COMPLETE_LESSON' | 'SUBMIT_ASSESSMENT';
+  action: 'COMPLETE_LESSON' | 'SUBMIT_ASSESSMENT' | 'ENROLL_COURSE';
   data: any;
   timestamp: number;
 }

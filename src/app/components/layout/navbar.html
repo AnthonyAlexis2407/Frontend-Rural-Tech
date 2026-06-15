@@ -30,9 +30,17 @@
           <a routerLink="/library" routerLinkActive="active" (click)="closeMenu()">
             {{ ts.translate('nav.library_offline') }}
           </a>
+          <a routerLink="/certificates" routerLinkActive="active" (click)="closeMenu()">
+            {{ ts.translate('nav.certificates') }}
+          </a>
           <a routerLink="/profile" routerLinkActive="active" (click)="closeMenu()">
             {{ ts.translate('nav.profile') }}
           </a>
+          @if (auth.isAdmin()) {
+            <a routerLink="/admin/courses" routerLinkActive="active" (click)="closeMenu()" class="admin-link">
+              🛠️ PANEL ADMIN
+            </a>
+          }
           <a (click)="logout(); closeMenu()" href="javascript:void(0)" class="logout-link">
             {{ ts.translate('nav.logout') }}
           </a>
@@ -47,6 +55,16 @@
             <div class="status-box offline-box">⚡</div>
           }
         </a>
+
+        @if (auth.isAuthenticated()) {
+          <a routerLink="/notifications" class="notif-bell" [class.has-unread]="notifService.unreadCountSignal() > 0" (click)="closeMenu()">
+            🔔
+            @if (notifService.unreadCountSignal() > 0) {
+              <span class="notif-badge">{{ notifService.unreadCountSignal() > 9 ? '9+' : notifService.unreadCountSignal() }}</span>
+            }
+          </a>
+          <a routerLink="/settings" class="settings-icon" (click)="closeMenu()" title="Configuración">⚙</a>
+        }
 
         <div class="lang-selector-box">
           <button (click)="changeLanguage('es')" [class.active]="ts.currentLanguage() === 'es'">ES</button>

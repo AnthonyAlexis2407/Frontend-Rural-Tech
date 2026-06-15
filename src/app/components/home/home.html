@@ -60,7 +60,7 @@
         </div>
         <h3 class="at">{{ ts.translate('home.card_business_title') }}</h3>
         <p class="adesc">{{ ts.translate('home.card_business_desc') }}</p>
-        <button type="button" (click)="startNow()" class="al">
+        <button type="button" (click)="exploreCourses('business')" class="al">
           {{ ts.translate('home.card_business_btn') }}
         </button>
       </div>
@@ -77,7 +77,7 @@
         </div>
         <h3 class="at" [innerHTML]="ts.translate('home.card_agriculture_title')"></h3>
         <p class="adesc">{{ ts.translate('home.card_agriculture_desc') }}</p>
-        <button type="button" (click)="startNow()" class="al lw">
+        <button type="button" (click)="exploreCourses('agriculture')" class="al lw">
           {{ ts.translate('home.card_agriculture_btn') }}
         </button>
       </div>
@@ -93,7 +93,7 @@
         </div>
         <h3 class="at">{{ ts.translate('home.card_digital_title') }}</h3>
         <p class="adesc">{{ ts.translate('home.card_digital_desc') }}</p>
-        <button type="button" (click)="startNow()" class="al lw">{{ ts.translate('home.card_digital_btn') }}</button>
+        <button type="button" (click)="exploreCourses('technology')" class="al lw">{{ ts.translate('home.card_digital_btn') }}</button>
       </div>
 
       <div class="ac card-neo car-yellow">
@@ -108,7 +108,7 @@
         </div>
         <h3 class="at">{{ ts.translate('home.card_community_title') }}</h3>
         <p class="adesc">{{ ts.translate('home.card_community_desc') }}</p>
-        <button type="button" (click)="startNow()" class="al">{{ ts.translate('home.card_community_btn') }}</button>
+        <button type="button" (click)="exploreCourses('all')" class="al">{{ ts.translate('home.card_community_btn') }}</button>
       </div>
     </div>
   </section>

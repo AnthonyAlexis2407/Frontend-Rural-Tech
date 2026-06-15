@@ -67,7 +67,7 @@ export class LoginComponent implements OnInit {
     this.ts.setLanguage(lang);
   }
 
-  onLogin(): void {
+  async onLogin(): Promise<void> {
     this.errorMessage.set('');
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
@@ -75,7 +75,7 @@ export class LoginComponent implements OnInit {
     }
 
     const { email, password } = this.loginForm.getRawValue();
-    const result = this.auth.login(email, password);
+    const result = await this.auth.login(email, password);
 
     if (result.success) {
       this.router.navigate(['/dashboard']);
@@ -84,7 +84,7 @@ export class LoginComponent implements OnInit {
     }
   }
 
-  onRegister(): void {
+  async onRegister(): Promise<void> {
     this.errorMessage.set('');
     if (this.registerForm.invalid) {
       this.registerForm.markAllAsTouched();
@@ -92,7 +92,7 @@ export class LoginComponent implements OnInit {
     }
 
     const { name, email, location, role, password } = this.registerForm.getRawValue();
-    const result = this.auth.register(name, email, location, role, password);
+    const result = await this.auth.register(name, email, location, role, password);
 
     if (result.success) {
       this.router.navigate(['/dashboard']);
@@ -105,8 +105,12 @@ export class LoginComponent implements OnInit {
     this.router.navigate(['/help-center']);
   }
 
-  accessOffline(): void {
-    const result = this.auth.loginAsGuest('login');
+  goToForgotPassword(): void {
+    this.router.navigate(['/forgot-password']);
+  }
+
+  async accessOffline(): Promise<void> {
+    const result = await this.auth.loginAsGuest('login');
     if (result.success) {
       this.router.navigate(['/dashboard']);
     }

@@ -49,6 +49,12 @@
         <button class="btn-neo logout-btn" (click)="logout()">
           {{ ts.translate('profile.logout') }}
         </button>
+
+        <div class="profile-quick-links">
+          <a routerLink="/certificates" class="btn-neo quick-link-btn">🎓 {{ ts.translate('nav.certificates') }}</a>
+          <a routerLink="/notifications" class="btn-neo quick-link-btn">🔔 {{ ts.translate('nav.notifications') }}</a>
+          <a routerLink="/settings" class="btn-neo quick-link-btn">⚙ {{ ts.translate('nav.settings') }}</a>
+        </div>
       </div>
     </div>
 

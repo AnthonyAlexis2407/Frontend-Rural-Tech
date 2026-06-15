@@ -50,7 +50,7 @@
           <div class="form-group">
             <div class="lr">
               <label>{{ ts.translate('auth.field_password') }}</label>
-              <button type="button" class="fl" (click)="goToHelp()">{{ ts.translate('auth.forgot_password') }}</button>
+              <button type="button" class="fl" (click)="goToForgotPassword()">{{ ts.translate('auth.forgot_password') }}</button>
             </div>
             <input type="password" class="input-neo" [class.invalid]="loginForm.controls.password.invalid && loginForm.controls.password.touched"
                    formControlName="password" [placeholder]="ts.translate('auth.placeholder_password')"

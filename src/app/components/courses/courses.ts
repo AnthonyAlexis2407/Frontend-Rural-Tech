@@ -1,6 +1,6 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { TranslationService } from '../../services/translation.service';
 import { AuthService } from '../../services/auth.service';
 import { CourseService } from '../../services/course.service';
@@ -15,94 +15,31 @@ import { CatalogCourse } from '../../shared/types';
   templateUrl: './courses.html',
   styleUrls: ['./courses.css']
 })
-export class CoursesComponent {
+export class CoursesComponent implements OnInit {
   protected readonly ts = inject(TranslationService);
   protected readonly auth = inject(AuthService);
   protected readonly courseService = inject(CourseService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   protected readonly activeFilter = signal<string>('all');
+  protected readonly downloadingId = signal<string>('');
+  protected readonly enrollingId = signal<string>('');
 
-  protected readonly allCourses: CatalogCourse[] = [
-    {
-      id: 'drones',
-      title: 'INTRODUCCIÓN A DRONES AGRÍCOLAS',
-      description: 'Aprende a utilizar drones para monitoreo de cultivos, mapeo de terrenos y aplicación precisa de insumos.',
-      category: 'technology',
-      duration: '24h',
-      modules: 6,
-      level: 'courses.intermediate',
-      instructor: 'Ing. David Condori',
-      image: 'drones',
-      color: '#1e3a5f',
-      available: true
-    },
-    {
-      id: 'riego',
-      title: 'SISTEMAS DE RIEGO IOT',
-      description: 'Diseña e implementa sistemas de riego inteligente con sensores IoT para optimizar el uso del agua.',
-      category: 'technology',
-      duration: '18h',
-      modules: 4,
-      level: 'courses.intermediate',
-      instructor: 'María Quispe T.',
-      image: 'riego',
-      color: '#4f46e5',
-      available: true
-    },
-    {
-      id: 'suelos',
-      title: 'ANÁLISIS DE SUELOS CON IA',
-      description: 'Utiliza inteligencia artificial para clasificar nutrientes del suelo y recomendar cultivos óptimos.',
-      category: 'technology',
-      duration: '30h',
-      modules: 8,
-      level: 'courses.advanced',
-      instructor: 'Dr. Hugo Mamani',
-      image: 'suelos',
-      color: '#7a1a1a',
-      available: true
-    },
-    {
-      id: 'emprendimiento',
-      title: 'EMPRENDIMIENTO RURAL',
-      description: 'Estrategias comerciales, finanzas básicas y creación de cooperativas para potenciar la economía local.',
-      category: 'business',
-      duration: '20h',
-      modules: 5,
-      level: 'courses.beginner',
-      instructor: 'Lic. Elena Vargas',
-      image: 'business',
-      color: '#d4d0c9',
-      available: true
-    },
-    {
-      id: 'agroecologia',
-      title: 'AGROECOLOGÍA SOSTENIBLE',
-      description: 'Prácticas agrícolas sostenibles, conservación de suelos y biodiversidad para comunidades rurales.',
-      category: 'agriculture',
-      duration: '16h',
-      modules: 4,
-      level: 'courses.beginner',
-      instructor: 'Téc. Juan Pérez',
-      image: 'agro',
-      color: '#16a34a',
-      available: true
-    },
-    {
-      id: 'certificacion',
-      title: 'CERTIFICACIÓN ORGÁNICA',
-      description: 'Procesos y normativas para obtener certificación orgánica de tus productos agrícolas.',
-      category: 'agriculture',
-      duration: '12h',
-      modules: 3,
-      level: 'courses.intermediate',
-      instructor: 'Ing. Rosa Sarmiento',
-      image: 'cert',
-      color: '#8a7a00',
-      available: false
+  ngOnInit(): void {
+    // Apply category from query param if provided
+    const cat = this.route.snapshot.queryParamMap.get('category');
+    if (cat) this.activeFilter.set(cat);
+
+    // Load catalog if not already loaded
+    if (!this.courseService.catalogLoaded()) {
+      this.courseService.loadCatalog();
     }
-  ];
+  }
+
+  get allCourses(): CatalogCourse[] {
+    return this.courseService.catalogCourses;
+  }
 
   get filteredCourses(): CatalogCourse[] {
     const filter = this.activeFilter();
@@ -115,7 +52,7 @@ export class CoursesComponent {
   }
 
   isCourseActive(courseId: string): boolean {
-    return this.courseService.courses().some(c => c.id === courseId);
+    return this.courseService.isCourseEnrolled(courseId);
   }
 
   isCourseDownloaded(courseId: string): boolean {
@@ -129,16 +66,39 @@ export class CoursesComponent {
   }
 
   getButtonLabel(course: CatalogCourse): string {
-    return course.available
-      ? this.ts.translate('courses.enroll')
-      : this.ts.translate('courses.view');
+    if (!course.available) return this.ts.translate('courses.coming_soon_badge');
+    if (this.isCourseActive(course.id)) return this.ts.translate('courses.view');
+    return this.ts.translate('courses.enroll');
   }
 
-  enrollOrView(courseId: string): void {
-    if (this.auth.isAuthenticated()) {
-      this.router.navigate(['/dashboard']);
-    } else {
+  /** Navigate to course detail */
+  goToDetail(courseId: string): void {
+    this.router.navigate(['/courses', courseId]);
+  }
+
+  /** Enroll directly from catalog */
+  async enrollCourse(event: Event, courseId: string): Promise<void> {
+    event.stopPropagation();
+    if (!this.auth.isAuthenticated()) {
       this.router.navigate(['/login']);
+      return;
     }
+    if (this.enrollingId()) return;
+    this.enrollingId.set(courseId);
+    await this.courseService.enrollCourse(courseId);
+    setTimeout(() => this.enrollingId.set(''), 1500);
+  }
+
+  /** Start a download for a course */
+  downloadCourse(event: Event, course: CatalogCourse): void {
+    event.stopPropagation();
+    if (!this.auth.isAuthenticated()) {
+      this.router.navigate(['/login']);
+      return;
+    }
+    if (this.downloadingId()) return;
+    this.downloadingId.set(course.id);
+    this.courseService.startCourseDownload(course.id, course.title, `${course.modules * 50}MB`);
+    setTimeout(() => this.downloadingId.set(''), 2000);
   }
 }

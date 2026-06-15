@@ -48,6 +48,18 @@ export class LibraryComponent {
   }
 
   openFile(name: string): void {
+    // Create a simple text file as a demo of real file opening
+    const content = `Rural-Tech — ${name}\n\nEste archivo contiene el material del módulo descargado.\nEn la versión con backend completo, aquí se abriría el PDF o video real almacenado en el dispositivo.\n\nContenido offline disponible.\n© 2026 Rural-Tech Educa`;
+    const mime = name.endsWith('.mp4') ? 'video/mp4' : 'text/plain;charset=utf-8';
+    const blob = new Blob([content], { type: mime });
+    const url = URL.createObjectURL(blob);
+    const ext = name.endsWith('.mp4') ? '' : '.txt';
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name + ext;
+    a.target = '_blank';
+    a.click();
+    URL.revokeObjectURL(url);
     this.openMessage.set(this.ts.translate('library.opening') + ' ' + name + '...');
     setTimeout(() => this.openMessage.set(''), 3000);
   }

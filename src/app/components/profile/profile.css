@@ -265,3 +265,20 @@
   .profile-main { grid-template-columns: 1fr; padding: 20px; }
   .info-card { padding: 20px; }
 }
+
+.profile-quick-links {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: .5rem;
+  margin-top: .5rem;
+}
+.quick-link-btn {
+  font-size: .75rem !important;
+  padding: .5rem .6rem !important;
+  text-align: center;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .3rem;
+}

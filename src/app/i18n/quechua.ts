@@ -253,5 +253,72 @@ export const QuechuaTranslations = {
   'footer.info': '© 2026 RURAL-TECH EDUCA. OFFLINE ACTIVASQA.',
   'footer.support': 'YANAPAKUY (SOPORTE)',
   'footer.guide': 'LLAMK\'ANA QILLQA',
-  'footer.contact': 'TINKUNAKUY (CONTACTO)'
+  'footer.contact': 'TINKUNAKUY (CONTACTO)',
+
+  // Navigation — new items
+  'nav.certificates': 'Certificadokuna',
+  'nav.notifications': 'Willaykuna',
+  'nav.settings': 'Kamachiy',
+
+  // Course back link
+  'courses.back': 'Yachaykunaman Kutiy',
+
+  // Course Detail Page
+  'detail.tab_overview': 'SUTTICHAY',
+  'detail.tab_modules': 'T\'AQAKUNA',
+  'detail.tab_instructor': 'YACHACHIQ',
+  'detail.about_course': 'Kay Yachay Haqay',
+  'detail.what_learn': 'Imata yachanki',
+  'detail.requirements': 'Imata Munakun',
+  'detail.enrolled': 'Kay Yachaypi Qillqasqa',
+  'detail.progress': 'Ñawpan',
+  'detail.modules_done': 't\'aqa tukusqa',
+  'detail.continue_btn': 'WIÑACHIY',
+  'detail.enroll_btn': 'QILLQAKUY QISPI',
+  'detail.enroll_success': '¡Qillqakuy allin! Kunan qallariy atinki.',
+  'detail.download_offline': 'OFFLINE URAYKACHIY',
+  'detail.downloading': 'Uraykachichkan...',
+  'detail.includes': 'Kay yachay yupay',
+
+  // Certificates Page
+  'certs.title': 'Noqaq Certificadokunay',
+  'certs.subtitle': 'Tukusqa yachaykuna digital certificadokunay.',
+  'certs.certifies': 'RIQISIRIKUN',
+  'certs.completed': 'kay yachayta tukusqa:',
+  'certs.download': 'CERTIFICADOTA URAYKACHIY',
+  'certs.empty_title': 'Manaraq Certificado',
+  'certs.empty_desc': 'Yachayta tukuy ñawpaq certificadoykita chasinaykipaq.',
+  'certs.go_courses': 'Yachaykunata Qhaway',
+
+  // Notifications Page
+  'notif.title': 'Willaykuna',
+  'notif.subtitle': 'Ñawpanniykita qhaway.',
+  'notif.mark_all': 'Lliwta ñawirqusqa niy',
+  'notif.clear_all': 'Lliwta qulluy',
+  'notif.empty_title': 'Mana Willaykuna',
+  'notif.empty_desc': 'Yachaykuna, uraykachiy, tinkuchiy willaykunam kaypi rikhurinqa.',
+
+  // Settings Page
+  'settings.title': 'Kamachiy',
+  'settings.subtitle': 'Rural-Tech llamk\'anata kikin munayki hina kamachiy.',
+  'settings.language': 'Simi',
+  'settings.default_lang': 'Akllanku simi',
+  'settings.notifications_title': 'Willaykuna',
+  'settings.notifications_enabled': 'Willaykunata pichiy',
+  'settings.sync_title': 'Tinkuchiy',
+  'settings.auto_sync': 'Kikin tinkuchiy',
+  'settings.wifi_only': 'WiFi pi llamk\'achiy',
+  'settings.accessibility': 'Yachay usuchiy',
+  'settings.font_size': 'Qillqa hatun',
+  'settings.save': 'Allinchu Kananpaq',
+  'settings.saved': 'Kamachiy waqaychasqa.',
+  'settings.reset': 'Qallarimanta',
+  'settings.reset_done': 'Kamachiy qallarimanta churasqa.',
+  'settings.clear_data': 'Cache qulluy',
+
+  // Profile — new items
+  'profile.change_password': 'Yaykuna Killata Hukchay',
+  'profile.new_password': 'Musuq Yaykuna Killa',
+  'profile.confirm_password': 'Yaykuna Killata Takyachiy',
+  'profile.password_changed': 'Yaykuna killa hukchisqa.'
 };

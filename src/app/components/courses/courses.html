@@ -24,14 +24,22 @@
     </button>
   </div>
 
+  <!-- Loading state -->
+  @if (courseService.catalogLoading()) {
+    <div class="catalog-loading">
+      <div class="loading-spinner"></div>
+      <p>Cargando cursos disponibles...</p>
+    </div>
+  }
+
   <!-- Course Grid -->
   <div class="catalog-grid">
     @for (course of filteredCourses; track course.id) {
-      <div class="course-catalog-card card-neo">
+      <div class="course-catalog-card card-neo" (click)="goToDetail(course.id)">
         <div class="catalog-thumb" [style]="{ backgroundColor: course.color }">
           <div class="thumb-overlay">
             @if (isCourseActive(course.id)) {
-              <span class="enrolled-badge">{{ ts.translate('courses.enrolled_badge') }}</span>
+              <span class="enrolled-badge">✓ {{ ts.translate('courses.enrolled_badge') }}</span>
             }
             @if (isCourseDownloaded(course.id)) {
               <span class="offline-badge">{{ ts.translate('courses.offline_badge') }}</span>
@@ -112,19 +120,36 @@
           }
 
           <div class="catalog-footer">
-            @if (!isCourseActive(course.id)) {
-              <button class="btn-neo" (click)="enrollOrView(course.id)" [class.btn-black]="course.available" [class.btn-disabled]="!course.available">
-                {{ getButtonLabel(course) }}
+            @if (isCourseActive(course.id)) {
+              <button class="btn-neo btn-black" (click)="goToDetail(course.id)">
+                ▶ {{ ts.translate('courses.view') }}
               </button>
-            } @else {
-              <button class="btn-neo btn-black" (click)="enrollOrView(course.id)">
+            } @else if (course.available) {
+              <button class="btn-neo btn-enroll" (click)="enrollCourse($event, course.id)" 
+                      [disabled]="enrollingId() === course.id"
+                      [class.enrolling]="enrollingId() === course.id">
+                @if (enrollingId() === course.id) {
+                  <span class="enroll-success-icon">✓</span> ¡Inscrito!
+                } @else {
+                  🎓 {{ ts.translate('courses.enroll') }}
+                }
+              </button>
+              <button class="btn-neo btn-detail" (click)="goToDetail(course.id)">
                 {{ ts.translate('courses.view') }}
               </button>
+            } @else {
+              <button class="btn-neo btn-disabled" disabled>
+                {{ ts.translate('courses.coming_soon_badge') }}
+              </button>
             }
+
             @if (isCourseDownloaded(course.id)) {
               <span class="downloaded-tag">✓ {{ ts.translate('courses.downloaded') }}</span>
-            } @else if (course.available) {
-              <span class="download-hint">⬇ {{ ts.translate('courses.download') }}</span>
+            } @else if (isCourseActive(course.id) && course.available) {
+              <button class="btn-neo download-hint-btn" (click)="downloadCourse($event, course)"
+                      [disabled]="downloadingId() === course.id">
+                @if (downloadingId() === course.id) { ⏳ Descargando... } @else { ⬇ {{ ts.translate('courses.download') }} }
+              </button>
             }
           </div>
         </div>
