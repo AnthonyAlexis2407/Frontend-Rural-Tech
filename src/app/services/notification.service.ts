@@ -140,9 +140,21 @@ export class NotificationService {
 
   async markAllRead(): Promise<void> {
     const unread = this.notifications().filter(n => !n.read);
-    for (const n of unread) {
-      await this.markAsRead(n.id);
-    }
+    
+    // Ejecutar llamadas HTTP en paralelo para mayor velocidad
+    const promises = unread.map(n => {
+      if (!n.id.startsWith('n_') && this.auth.isAuthenticated() && navigator.onLine && !this.auth.isGuest()) {
+        return firstValueFrom(this.http.put(`${environment.apiUrl}/notificaciones/${n.id}/leer`, {})).catch(e => console.warn('Error:', e));
+      }
+      return Promise.resolve();
+    });
+    
+    await Promise.all(promises);
+
+    // Actualización de estado en bloque
+    this.notifications.update(list => list.map(n => ({ ...n, read: true })));
+    this.saveToStorage();
+    this.refreshUnread();
   }
 
   async deleteNotification(id: string): Promise<void> {
@@ -163,9 +175,21 @@ export class NotificationService {
 
   async clearAll(): Promise<void> {
     const notifs = [...this.notifications()];
-    for (const n of notifs) {
-      await this.deleteNotification(n.id);
-    }
+    
+    // Ejecutar eliminaciones HTTP en paralelo
+    const promises = notifs.map(n => {
+      if (!n.id.startsWith('n_') && this.auth.isAuthenticated() && navigator.onLine && !this.auth.isGuest()) {
+        return firstValueFrom(this.http.delete(`${environment.apiUrl}/notificaciones/${n.id}`)).catch(e => console.warn('Error:', e));
+      }
+      return Promise.resolve();
+    });
+
+    await Promise.all(promises);
+
+    // Limpiar estado en bloque instantáneamente
+    this.notifications.set([]);
+    this.saveToStorage();
+    this.refreshUnread();
   }
 
   private refreshUnread(): void {

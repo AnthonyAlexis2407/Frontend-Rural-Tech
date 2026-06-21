@@ -21,3 +21,13 @@
 .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
 .certs-empty h2 { font-size: 1.5rem; font-weight: 900; margin-bottom: .5rem; }
 .certs-empty p { color: #555; margin-bottom: 1.5rem; }
+
+@media (max-width: 480px) {
+  .certs-header { padding: 2rem 5% 1.5rem; }
+  .certs-heading { font-size: 2.5rem; }
+  .certs-grid { grid-template-columns: 1fr; }
+  .cert-body { padding: 1rem; }
+  .cert-student { font-size: 1.1rem; }
+  .cert-course { font-size: 0.9rem; }
+  .cert-footer { padding: 1rem; }
+}

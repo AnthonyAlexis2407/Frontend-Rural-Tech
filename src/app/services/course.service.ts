@@ -673,20 +673,167 @@ export class CourseService {
       name: fileName,
       size: '22.4MB',
       type: 'pdf',
-      downloadedAt: Date.now()
+      downloadedAt: Date.now(),
+      courseId: courseId
     };
     await this.db.saveDownloadedFile(newFile);
+
+    // Si está online, sincronizar con el servidor inmediatamente
+    if (navigator.onLine && this.auth.isAuthenticated() && !this.auth.isGuest()) {
+      try {
+        await firstValueFrom(
+          this.http.put(`${environment.apiUrl}/inscripciones/descargado/${courseId}`, {}, {
+            params: { descargado: true }
+          })
+        );
+        await firstValueFrom(
+          this.http.post(`${environment.apiUrl}/archivos-descargados/`, {
+            curso_id: courseId,
+            nombre_archivo: fileName,
+            tamano: '22.4MB',
+            tipo: 'pdf'
+          })
+        );
+      } catch (e) {
+        console.warn('Error al guardar registro de descarga en el servidor:', e);
+      }
+    }
+
     await this.loadDownloadedFiles();
   }
 
   async deleteLocalFile(fileName: string): Promise<void> {
+    const file = this.downloadedFiles().find(f => f.name === fileName);
+    const courseId = file?.courseId;
+
     await this.db.deleteDownloadedFile(fileName);
+
+    if (navigator.onLine && this.auth.isAuthenticated() && !this.auth.isGuest()) {
+      try {
+        await firstValueFrom(
+          this.http.delete(`${environment.apiUrl}/archivos-descargados/${fileName}`)
+        );
+      } catch (e) {
+        console.warn('Error al eliminar descarga en el servidor:', e);
+      }
+    }
+
+    if (courseId) {
+      const remaining = await this.db.getDownloadedFiles();
+      const hasMore = remaining.some(f => f.courseId === courseId);
+      if (!hasMore) {
+        this.courses.update(list => list.map(c => {
+          if (c.id === courseId) {
+            const updated = { ...c, downloaded: false };
+            this.db.put('courses', updated);
+            
+            if (navigator.onLine && this.auth.isAuthenticated() && !this.auth.isGuest()) {
+              firstValueFrom(
+                this.http.put(`${environment.apiUrl}/inscripciones/descargado/${courseId}`, {}, {
+                  params: { descargado: false }
+                })
+              ).catch(err => console.warn(err));
+            }
+            return updated;
+          }
+          return c;
+        }));
+      }
+    }
+
     await this.loadDownloadedFiles();
   }
 
   async loadDownloadedFiles(): Promise<void> {
+    if (navigator.onLine && this.auth.isAuthenticated() && !this.auth.isGuest()) {
+      try {
+        const serverFiles = await firstValueFrom(
+          this.http.get<any[]>(`${environment.apiUrl}/archivos-descargados/`)
+        );
+        if (serverFiles) {
+          for (const f of serverFiles) {
+            const localFile: DownloadedFile = {
+              name: f.nombre_archivo,
+              size: f.tamano,
+              type: f.tipo,
+              downloadedAt: new Date(f.descargado_en).getTime(),
+              courseId: f.curso_id
+            };
+            await this.db.saveDownloadedFile(localFile);
+          }
+        }
+      } catch (e) {
+        console.warn('Error al obtener descargas del servidor:', e);
+      }
+    }
+
     let files = await this.db.getDownloadedFiles();
     this.downloadedFiles.set(files);
+  }
+
+  async syncLocalDownloadsToServer(): Promise<void> {
+    if (!navigator.onLine || !this.auth.isAuthenticated() || this.auth.isGuest()) {
+      return;
+    }
+    try {
+      const localFiles = await this.db.getDownloadedFiles();
+      const localCourses = await this.db.getAll('courses');
+      
+      const serverFiles = await firstValueFrom(
+        this.http.get<any[]>(`${environment.apiUrl}/archivos-descargados/`)
+      );
+      const serverFileNames = new Set(serverFiles.map(f => f.nombre_archivo));
+
+      for (const file of localFiles) {
+        if (!serverFileNames.has(file.name)) {
+          const courseId = file.courseId || 'drones';
+          try {
+            await firstValueFrom(
+              this.http.post(`${environment.apiUrl}/archivos-descargados/`, {
+                curso_id: courseId,
+                nombre_archivo: file.name,
+                tamano: file.size,
+                tipo: file.type
+              })
+            );
+          } catch (err) {
+            console.warn(`Error al subir archivo descargado ${file.name} al servidor:`, err);
+          }
+        }
+      }
+
+      const downloadedCourses = localCourses.filter(c => c.downloaded);
+      for (const c of downloadedCourses) {
+        try {
+          await firstValueFrom(
+            this.http.put(`${environment.apiUrl}/inscripciones/descargado/${c.id}`, {}, {
+              params: { descargado: true }
+            })
+          );
+        } catch (err) {
+          console.warn(`Error al actualizar estado de descarga del curso ${c.id} en el servidor:`, err);
+        }
+      }
+      
+      // Volver a cargar descargas actualizadas
+      const updatedServerFiles = await firstValueFrom(
+        this.http.get<any[]>(`${environment.apiUrl}/archivos-descargados/`)
+      );
+      if (updatedServerFiles) {
+        for (const f of updatedServerFiles) {
+          const localFile: DownloadedFile = {
+            name: f.nombre_archivo,
+            size: f.tamano,
+            type: f.tipo,
+            downloadedAt: new Date(f.descargado_en).getTime(),
+            courseId: f.curso_id
+          };
+          await this.db.saveDownloadedFile(localFile);
+        }
+      }
+    } catch (e) {
+      console.warn('Error durante la sincronización de descargas con el servidor:', e);
+    }
   }
 
   private issueCertificate(courseId: string): void {

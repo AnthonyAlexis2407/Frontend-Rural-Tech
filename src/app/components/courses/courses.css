@@ -333,3 +333,16 @@
   box-shadow: 10px 10px 0 #000;
 }
 
+@media (max-width: 480px) {
+  .courses-header { padding: 20px 15px 15px; }
+  .courses-heading { font-size: 2.2rem; }
+  .filter-bar { padding: 0 15px 15px; gap: 8px; flex-direction: column; }
+  .filter-btn { padding: 12px 14px; font-size: 0.8rem; flex: 1; text-align: center; min-width: unset; width: 100%; }
+  .catalog-grid { padding: 0 15px 30px; gap: 15px; }
+  .catalog-info { padding: 15px; }
+  .catalog-title { font-size: 1.1rem; }
+  .catalog-meta { grid-template-columns: 1fr; gap: 8px; }
+  .catalog-footer { flex-direction: column; align-items: stretch; gap: 10px; }
+  .catalog-footer .btn-neo { width: 100%; text-align: center; }
+}
+

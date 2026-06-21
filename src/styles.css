@@ -32,8 +32,16 @@ body {
   background-color: var(--bg-cream);
   color: var(--neutral-black);
   min-height: 100vh;
-  overflow-x: hidden;
   line-height: 1.4;
+}
+
+html, body {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  /* Prevenir desbordamiento de textos largos en móviles */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 /* Scrollbar Styling */

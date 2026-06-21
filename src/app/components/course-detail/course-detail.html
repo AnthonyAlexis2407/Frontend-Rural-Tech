@@ -142,6 +142,10 @@
               <button class="btn-neo btn-black enroll-btn" (click)="startModule(activeModule)">
                 ▶ {{ ts.translate('detail.continue_btn') }}
               </button>
+            } @else if (progress === 100 && modules().length > 0) {
+              <button class="btn-neo btn-black enroll-btn" (click)="startModule(modules()[0])">
+                🔄 Repasar Curso
+              </button>
             }
           } @else {
             @if (!catalog()!.available) {

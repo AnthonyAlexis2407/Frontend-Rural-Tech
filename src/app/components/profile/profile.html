@@ -88,21 +88,34 @@
       <div class="achievements-card card-neo">
         <h3>{{ ts.translate('profile.achievements') }}</h3>
         <div class="achievements-list">
-          @if (completedCourses >= 1) {
+          @for (ach of userAchievements(); track ach.id) {
             <div class="achievement-item">
-              <span class="ach-icon">🎓</span>
-              <span class="ach-text">{{ ts.translate('profile.achievement_first_course') }}</span>
-            </div>
-          }
-          @if (totalProgress > 50) {
-            <div class="achievement-item">
-              <span class="ach-icon">🔥</span>
-              <span class="ach-text">{{ ts.translate('profile.achievement_50_percent') }}</span>
+              <span class="ach-icon">{{ ach.icono }}</span>
+              <span class="ach-text">{{ ts.translate(ach.titulo_clave) }}</span>
             </div>
           }
         </div>
-        @if (completedCourses < 1 && totalProgress <= 50) {
+        @if (userAchievements().length === 0) {
           <p class="no-achievements">{{ ts.translate('profile.no_achievements') }}</p>
+        }
+      </div>
+
+      <div class="certificates-card card-neo">
+        <h3>Mis Certificados</h3>
+        <div class="certificates-list">
+          @for (cert of certificates; track cert.id) {
+            <div class="certificate-item" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
+              <div class="cert-info">
+                <span style="font-weight: 600; color: #1e3a5f;">{{ cert.courseTitle }}</span>
+              </div>
+              <button class="btn-neo btn-blue" (click)="downloadCertificate(cert)" style="padding: 6px 12px; font-size: 12px;">
+                Descargar PDF
+              </button>
+            </div>
+          }
+        </div>
+        @if (certificates.length === 0) {
+          <p class="no-certificates" style="color: #64748b; font-size: 14px; margin-top: 10px;">Aún no tienes certificados. ¡Completa un curso para obtener uno!</p>
         }
       </div>
     </div>

@@ -28,7 +28,14 @@
 
       <!-- Main content -->
       <main class="lp-main">
-        <!-- Video / PDF player area -->
+        @if (isLoading()) {
+          <div class="flex flex-col items-center justify-center h-full min-h-[400px]">
+            <div class="w-16 h-16 border-8 border-gray-200 border-t-black rounded-full animate-spin mb-6"></div>
+            <h3 class="text-2xl font-black mb-2">Cargando Módulo...</h3>
+            <p class="text-gray-500 font-bold text-center">Preparando el entorno de aprendizaje<br>para una mejor experiencia.</p>
+          </div>
+        } @else {
+          <!-- Video / PDF player area -->
         <div class="lp-player card-neo">
           @if (currentModule()!.type === 'video') {
             <div class="lp-video-area">
@@ -56,24 +63,23 @@
             </div>
           } @else if (currentModule()!.type === 'pdf') {
             <div class="lp-pdf-area">
-              @if (safeContentUrl() && isPdfUrl()) {
-                <!-- Real PDF embed -->
-                <div class="lp-pdf-embed">
-                  <iframe [src]="safeContentUrl()"
-                          frameborder="0"
-                          class="lp-iframe lp-iframe-pdf">
-                  </iframe>
-                </div>
-              } @else if (safeContentUrl()) {
-                <!-- It's a URL but not .pdf, show as link -->
-                <div class="lp-pdf-icon">📄</div>
-                <h3>{{ currentModule()!.title }}</h3>
-                <p>Documento disponible en enlace externo</p>
-                <a [href]="currentModule()!.contentUrl" target="_blank" rel="noopener" class="btn-neo btn-black lp-external-link">
-                  📥 Abrir Documento
-                </a>
-                <div class="lp-pdf-content">
-                  <p>{{ currentModule()!.description }}</p>
+              @if (safeContentUrl()) {
+                <!-- Archivo PDF vinculado -->
+                <div class="lp-pdf-card text-center py-10 px-6 bg-[#f9f7f3] border-4 border-black rounded-xl">
+                  <div class="lp-pdf-icon text-6xl mb-4">📄</div>
+                  <h3 class="text-2xl font-black mb-2">{{ currentModule()!.title }}</h3>
+                  <p class="text-gray-600 font-bold mb-6">El material de lectura para este módulo está disponible en formato PDF.</p>
+                  
+                  <a [href]="getFullUrl(currentModule()!.contentUrl)" target="_blank" rel="noopener noreferrer" class="btn-neo btn-black text-xl px-8 py-4 inline-flex items-center justify-center gap-3">
+                    <span>👁️</span> ABRIR DOCUMENTO PDF
+                  </a>
+                  
+                  @if (currentModule()!.description && currentModule()!.description !== currentModule()!.title) {
+                    <div class="mt-8 pt-6 border-t-2 border-dashed border-gray-300 text-left max-w-2xl mx-auto">
+                      <h4 class="font-bold text-sm text-gray-500 uppercase tracking-widest mb-2">Acerca de este documento</h4>
+                      <p class="text-gray-700 leading-relaxed">{{ currentModule()!.description }}</p>
+                    </div>
+                  }
                 </div>
               } @else {
                 <!-- Placeholder PDF (no URL) -->
@@ -125,7 +131,10 @@
                         <button class="quiz-opt btn-neo" 
                                 [class.selected]="selectedAnswers()[currentQuestionIndex()] === idx"
                                 (click)="selectOption(idx)">
-                          {{ opt }}
+                          <span class="flex-1">{{ opt }}</span>
+                          @if (selectedAnswers()[currentQuestionIndex()] === idx) {
+                            <span class="font-black text-xl ml-4">✓ ELEGIDO</span>
+                          }
                         </button>
                       }
                     </div>
@@ -231,6 +240,7 @@
             </button>
           }
         </div>
+        }
       </main>
     </div>
   } @else {

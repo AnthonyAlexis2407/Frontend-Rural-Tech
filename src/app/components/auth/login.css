@@ -63,3 +63,16 @@
   .rl{grid-template-columns:1fr;gap:30px}
   .mh{font-size:2.5rem}
 }
+
+@media(max-width:480px){
+  .aw { padding: 10px; }
+  .tp { justify-content: center; margin-bottom: 10px; }
+  .lct { padding: 10px 0; }
+  .lc { padding: 25px 15px; }
+  .mh { font-size: 2rem; }
+  .icr { grid-template-columns: 1fr; }
+  .rc { padding: 20px; }
+  .rt { font-size: 1.5rem; }
+  .is { gap: 20px; }
+  .ig { gap: 15px; }
+}

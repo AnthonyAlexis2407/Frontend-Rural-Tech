@@ -1,7 +1,11 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
+import { firstValueFrom } from 'rxjs';
 import { TranslationService } from '../../services/translation.service';
+import { AuthService } from '../../services/auth.service';
 import { NavbarComponent } from '../layout/navbar';
 import { FooterComponent } from '../layout/footer/footer';
 
@@ -19,8 +23,10 @@ interface FaqItem {
   templateUrl: './help-center.html',
   styleUrls: ['./help-center.css']
 })
-export class HelpCenterComponent {
+export class HelpCenterComponent implements OnInit {
   protected readonly ts = inject(TranslationService);
+  private readonly http = inject(HttpClient);
+  private readonly auth = inject(AuthService);
 
   protected readonly downloadMessage = signal('');
 
@@ -31,6 +37,26 @@ export class HelpCenterComponent {
     { id: 4, questionKey: 'help.faq4_q', answerKey: 'help.faq4_a', open: false },
     { id: 5, questionKey: 'help.faq5_q', answerKey: 'help.faq5_a', open: false },
   ]);
+
+  async ngOnInit(): Promise<void> {
+    if (this.auth.isAuthenticated() && !this.auth.isGuest()) {
+      try {
+        const faqs = await firstValueFrom(
+          this.http.get<any[]>(`${environment.apiUrl}/faqs/`)
+        );
+        if (faqs && faqs.length > 0) {
+          this.faqItems.set(faqs.map((f, index) => ({
+            id: f.id || index + 1,
+            questionKey: f.clave_pregunta,
+            answerKey: f.clave_respuesta,
+            open: false
+          })));
+        }
+      } catch (err) {
+        console.warn('Error fetching FAQs from database, using local defaults.', err);
+      }
+    }
+  }
 
   toggleSymbol(item: FaqItem): string {
     return item.open ? '−' : '+';

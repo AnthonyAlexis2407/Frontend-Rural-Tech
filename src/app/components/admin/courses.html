@@ -6,6 +6,9 @@
       <p class="text-muted font-bold uppercase">Gestión de Cursos y Contenidos de Rural-Tech</p>
     </div>
     <div class="flex gap-4">
+      <button routerLink="/dashboard" class="btn-neo font-black bg-white border-black border-2" title="Volver a la interfaz principal">
+        🏠 VOLVER AL INICIO
+      </button>
       @if (currentView() === 'list') {
         <button (click)="openCreateCourse()" class="btn-neo btn-black font-black">
           + CREAR NUEVO CURSO
@@ -230,9 +233,60 @@
               </div>
 
               <div class="form-group col-span-2">
-                <label class="font-bold">URL del Recurso (Video de YouTube, PDF, etc.)</label>
-                <input type="text" formControlName="contenido_url" class="input-neo" placeholder="https://www.youtube.com/watch?v=... o https://ejemplo.com/documento.pdf">
-                <small class="text-muted">Para videos de YouTube use el enlace completo. Para PDFs use la URL directa del archivo.</small>
+                @if (moduleForm.get('tipo_contenido')?.value === 'video') {
+                  <label class="font-bold">URL del Recurso (Video de YouTube)</label>
+                  <input type="text" formControlName="contenido_url" class="input-neo" placeholder="https://www.youtube.com/watch?v=...">
+                  <small class="text-muted">Para videos de YouTube use el enlace completo.</small>
+                } @else if (moduleForm.get('tipo_contenido')?.value === 'pdf') {
+                  <label class="font-bold">Subir Archivo PDF</label>
+                  <input type="file" accept=".pdf" (change)="onFileSelected($event)" class="input-neo">
+                  @if (uploadingFile()) {
+                    <div class="mt-2 font-bold text-yellow-600">⏳ Subiendo archivo, por favor espere...</div>
+                  }
+                  @if (editingModuleId && moduleForm.get('contenido_url')?.value) {
+                    <div class="mt-1 text-sm">Archivo actual: <a [href]="getFullUrl(moduleForm.get('contenido_url')?.value)" target="_blank" class="underline text-blue-600">Ver PDF</a></div>
+                  }
+                } @else if (moduleForm.get('tipo_contenido')?.value === 'quiz') {
+                  <label class="font-bold">Preguntas del Cuestionario</label>
+                  <div formArrayName="quizQuestions" class="quiz-editor mt-2">
+                    @for (qCtrl of quizQuestions.controls; track qCtrl; let i = $index) {
+                      <div [formGroupName]="i" class="border-2 border-black p-4 mb-4 bg-white relative">
+                        <button type="button" (click)="removeQuestion(i)" class="btn-neo btn-danger btn-sm absolute top-2 right-2">❌</button>
+                        
+                        <label class="font-bold text-sm">Pregunta {{ i + 1 }}</label>
+                        <input type="text" formControlName="text" class="input-neo mb-3" placeholder="Escriba la pregunta...">
+                        
+                        <div formArrayName="options" class="ml-4 pl-4 border-l-4 border-gray-300">
+                          <label class="font-black text-sm block mb-3 text-gray-700">Opciones de Respuesta (seleccione UNA correcta marcando el círculo)</label>
+                          @for (optCtrl of getOptions(i).controls; track optCtrl; let j = $index) {
+                            <div class="quiz-option-row"
+                                 [class.is-correct]="quizQuestions.at(i).get('correctAnswer')?.value === j">
+                              
+                              <input type="radio" 
+                                     [name]="'correctAnswer_' + i" 
+                                     [checked]="quizQuestions.at(i).get('correctAnswer')?.value === j"
+                                     (change)="quizQuestions.at(i).get('correctAnswer')?.setValue(j)"
+                                     class="quiz-radio"
+                                     title="Marcar como respuesta correcta">
+                                     
+                              <input type="text" [formControlName]="j" class="input-neo flex-1" placeholder="Escriba la opción {{ j + 1 }}...">
+                              
+                              <button type="button" (click)="removeOption(i, j)" class="btn-neo btn-danger px-3 py-2 font-bold text-xs" title="Eliminar opción">
+                                🗑️ ELIMINAR
+                              </button>
+                            </div>
+                          }
+                          <button type="button" (click)="addOption(i)" class="btn-neo bg-white border-2 border-dashed border-gray-400 text-gray-600 hover:border-black hover:text-black w-full py-2 mt-2 font-bold">
+                            + AÑADIR OTRA OPCIÓN
+                          </button>
+                        </div>
+                      </div>
+                    }
+                    <button type="button" (click)="addQuestion()" class="btn-neo btn-black btn-sm w-full">
+                      + AGREGAR OTRA PREGUNTA
+                    </button>
+                  </div>
+                }
               </div>
             </div>
 

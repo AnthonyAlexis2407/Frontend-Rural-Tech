@@ -7,6 +7,7 @@ import { CourseService } from '../../services/course.service';
 import { AuthService } from '../../services/auth.service';
 import { NavbarComponent } from '../layout/navbar';
 import { CourseModule, CatalogCourse } from '../../shared/types';
+import { environment } from '../../../environments/environment';
 
 interface Question {
   text: string;
@@ -170,8 +171,11 @@ export class LessonPlayerComponent implements OnInit, OnDestroy {
 
   private videoInterval: any = null;
 
+  protected isLoading = signal<boolean>(true);
+
   ngOnInit(): void {
     this.route.paramMap.subscribe(async params => {
+      this.isLoading.set(true);
       const cId = params.get('id') ?? '';
       const mId = params.get('moduleId') ?? '';
       this.courseId.set(cId);
@@ -194,6 +198,11 @@ export class LessonPlayerComponent implements OnInit, OnDestroy {
         this.prepareContentUrl(mod);
       }
       this.simulateVideoProgress();
+
+      // Pequeña pantalla de carga para mejorar la experiencia de transición
+      setTimeout(() => {
+        this.isLoading.set(false);
+      }, 600);
     });
   }
 
@@ -204,6 +213,17 @@ export class LessonPlayerComponent implements OnInit, OnDestroy {
   }
 
   get questions(): Question[] {
+    const mod = this.currentModule();
+    if (mod && mod.type === 'quiz' && mod.contentUrl) {
+      try {
+        const parsed = JSON.parse(mod.contentUrl);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed as Question[];
+        }
+      } catch (e) {
+        console.error('Error parseando preguntas del módulo:', e);
+      }
+    }
     return QUIZ_QUESTIONS[this.courseId()] || DEFAULT_QUESTIONS;
   }
 
@@ -292,6 +312,9 @@ export class LessonPlayerComponent implements OnInit, OnDestroy {
       if (vimeoId) {
         embedUrl = `https://player.vimeo.com/video/${vimeoId}`;
       }
+    } else if (embedUrl.startsWith('/uploads/')) {
+      const baseUrl = environment.apiUrl.replace('/api', '');
+      embedUrl = `${baseUrl}${embedUrl}`;
     }
 
     this.safeContentUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl));
@@ -407,5 +430,15 @@ export class LessonPlayerComponent implements OnInit, OnDestroy {
 
   goBack(): void {
     this.router.navigate(['/courses', this.courseId()]);
+  }
+
+  getFullUrl(path?: string): string {
+    if (!path) return '';
+    if (path.startsWith('/uploads/')) {
+      // environment.apiUrl es 'http://127.0.0.1:8000/api', queremos la base
+      const baseUrl = environment.apiUrl.replace('/api', '');
+      return `${baseUrl}${path}`;
+    }
+    return path;
   }
 }

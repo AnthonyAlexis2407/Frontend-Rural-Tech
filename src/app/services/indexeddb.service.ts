@@ -13,6 +13,7 @@ export interface DownloadedFile {
   size: string;
   type: 'pdf' | 'video';
   downloadedAt: number;
+  courseId?: string;
 }
 
 @Injectable({

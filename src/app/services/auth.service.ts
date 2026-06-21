@@ -1,6 +1,6 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import type { UserProfile, AuthResult } from '../shared/types';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient, AuthChangeEvent, Session } from '@supabase/supabase-js';
 import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
@@ -29,7 +29,7 @@ export class AuthService {
     this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
 
     // Escuchar el estado de autenticación de Supabase de manera reactiva
-    this.supabase.auth.onAuthStateChange(async (event, session) => {
+    this.supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
       if (session) {
         const user = session.user;
         const rawRole = user.user_metadata['rol'] || user.user_metadata['role'] || 'estudiante';
@@ -187,7 +187,22 @@ export class AuthService {
       : { name: 'Usuario Invitado (Offline)', email: 'offline@ruraltech.org', location: 'Comunidad Local' };
 
     const mockUser: UserProfile = { name: guest.name, email: guest.email, location: guest.location, role: 'student' };
-    const mockToken = 'mock-jwt-header.' + btoa(JSON.stringify(mockUser)) + '.mock-signature';
+    
+    const guestId = crypto.randomUUID();
+    const mockPayload = {
+      sub: guestId,
+      email: guest.email,
+      user_metadata: {
+        nombre: guest.name,
+        location: guest.location,
+        rol: 'estudiante'
+      },
+      role: 'authenticated',
+      aud: 'authenticated',
+      exp: Math.floor(Date.now() / 1000) + 86400,
+      iat: Math.floor(Date.now() / 1000)
+    };
+    const mockToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' + btoa(JSON.stringify(mockPayload)) + '.guest-mock-signature-' + guestId;
 
     const oldUserJson = localStorage.getItem('rt_user');
     let shouldClear = false;

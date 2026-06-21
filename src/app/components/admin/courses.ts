@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators, FormGroup, FormArray, FormControl } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
@@ -40,6 +40,10 @@ export class AdminCoursesComponent implements OnInit {
   protected courseForm!: FormGroup;
   protected moduleForm!: FormGroup;
 
+  // Variables para subida de archivo PDF
+  protected selectedPdfFile: File | null = null;
+  protected uploadingFile = signal(false);
+
   ngOnInit(): void {
     this.initForms();
     this.loadCourses();
@@ -66,8 +70,59 @@ export class AdminCoursesComponent implements OnInit {
       orden: [1, [Validators.required, Validators.min(1)]],
       tipo_contenido: ['video', [Validators.required]],
       contenido_url: [''],
-      duracion_minutos: [15, [Validators.required, Validators.min(1)]]
+      duracion_minutos: [15, [Validators.required, Validators.min(1)]],
+      quizQuestions: this.fb.array([])
     });
+
+    // Detectar cambios en tipo_contenido
+    this.moduleForm.get('tipo_contenido')?.valueChanges.subscribe(tipo => {
+      if (tipo === 'quiz' && this.quizQuestions.length === 0) {
+        this.addQuestion();
+      }
+    });
+  }
+
+  // Getters para el cuestionario
+  get quizQuestions(): FormArray {
+    return this.moduleForm.get('quizQuestions') as FormArray;
+  }
+
+  newQuestion(): FormGroup {
+    return this.fb.group({
+      text: ['', Validators.required],
+      options: this.fb.array([
+        this.fb.control('', Validators.required),
+        this.fb.control('', Validators.required)
+      ]),
+      correctAnswer: [0, Validators.required]
+    });
+  }
+
+  addQuestion() {
+    this.quizQuestions.push(this.newQuestion());
+  }
+
+  removeQuestion(index: number) {
+    this.quizQuestions.removeAt(index);
+  }
+
+  getOptions(qIndex: number): FormArray {
+    return this.quizQuestions.at(qIndex).get('options') as FormArray;
+  }
+
+  addOption(qIndex: number) {
+    this.getOptions(qIndex).push(this.fb.control('', Validators.required));
+  }
+
+  removeOption(qIndex: number, optIndex: number) {
+    this.getOptions(qIndex).removeAt(optIndex);
+  }
+
+  onFileSelected(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (file) {
+      this.selectedPdfFile = file;
+    }
   }
 
   async loadCourses(): Promise<void> {
@@ -252,8 +307,11 @@ export class AdminCoursesComponent implements OnInit {
       orden: nextOrder,
       tipo_contenido: 'video',
       duracion_minutos: 15,
-      descripcion: ''
+      descripcion: '',
+      contenido_url: ''
     });
+    this.quizQuestions.clear();
+    this.selectedPdfFile = null;
     this.showModuleForm.set(true);
   }
 
@@ -268,6 +326,28 @@ export class AdminCoursesComponent implements OnInit {
       contenido_url: mod.contentUrl || '',
       duracion_minutos: durationNum
     });
+    this.selectedPdfFile = null;
+    this.quizQuestions.clear();
+    if (mod.type === 'quiz' && mod.contentUrl) {
+      try {
+        const questions = JSON.parse(mod.contentUrl);
+        if (Array.isArray(questions)) {
+          questions.forEach((q: any) => {
+            const optionsArray = this.fb.array(q.options.map((opt: string) => this.fb.control(opt, Validators.required)));
+            this.quizQuestions.push(this.fb.group({
+              text: [q.text, Validators.required],
+              options: optionsArray,
+              correctAnswer: [q.correctAnswer, Validators.required]
+            }));
+          });
+        }
+      } catch (e) {
+        console.error('Error parseando preguntas', e);
+      }
+    }
+    if (mod.type === 'quiz' && this.quizQuestions.length === 0) {
+      this.addQuestion();
+    }
     this.showModuleForm.set(true);
   }
 
@@ -285,12 +365,34 @@ export class AdminCoursesComponent implements OnInit {
     this.successMessage.set('');
 
     const rawValue = this.moduleForm.getRawValue();
+    let finalUrl = rawValue.contenido_url || '';
+
+    // Si es PDF y hay archivo, subimos
+    if (rawValue.tipo_contenido === 'pdf' && this.selectedPdfFile) {
+      this.uploadingFile.set(true);
+      const formData = new FormData();
+      formData.append('file', this.selectedPdfFile);
+      try {
+        const res = await firstValueFrom(this.http.post<any>(`${environment.apiUrl}/uploads/`, formData));
+        finalUrl = res.url;
+      } catch (err: any) {
+        console.error('Error uploading file', err);
+        this.errorMessage.set('Error al subir el archivo PDF.');
+        this.loading.set(false);
+        this.uploadingFile.set(false);
+        return;
+      }
+      this.uploadingFile.set(false);
+    } else if (rawValue.tipo_contenido === 'quiz') {
+      finalUrl = JSON.stringify(rawValue.quizQuestions);
+    }
+
     const payload = {
       titulo: rawValue.titulo,
       descripcion: rawValue.descripcion || '',
       orden: Number(rawValue.orden),
       tipo_contenido: rawValue.tipo_contenido,
-      contenido_url: rawValue.contenido_url || '',
+      contenido_url: finalUrl,
       duracion_minutos: Number(rawValue.duracion_minutos)
     };
 
@@ -375,5 +477,14 @@ export class AdminCoursesComponent implements OnInit {
       case 'quiz': return '📝';
       default: return '📁';
     }
+  }
+
+  getFullUrl(path?: string): string {
+    if (!path) return '';
+    if (path.startsWith('/uploads/')) {
+      const baseUrl = environment.apiUrl.replace('/api', '');
+      return `${baseUrl}${path}`;
+    }
+    return path;
   }
 }

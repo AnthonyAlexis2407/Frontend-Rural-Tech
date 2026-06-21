@@ -7,6 +7,7 @@ import { AuthService } from '../../services/auth.service';
 import { NavbarComponent } from '../layout/navbar';
 import { FooterComponent } from '../layout/footer/footer';
 import { Certificate } from '../../shared/types';
+import { PdfGeneratorService } from '../../services/pdf-generator.service';
 
 @Component({
   selector: 'app-certificates',
@@ -20,6 +21,7 @@ export class CertificatesComponent implements OnInit {
   protected readonly courseService = inject(CourseService);
   protected readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly pdfGen = inject(PdfGeneratorService);
 
   ngOnInit(): void {
     this.courseService.syncCertificates();
@@ -57,53 +59,7 @@ export class CertificatesComponent implements OnInit {
   }
 
   async downloadCertificate(cert: Certificate): Promise<void> {
-    // Si estamos conectados y el certificado no es un ID ficticio local, intentar descargar desde el backend
-    if (navigator.onLine && !this.auth.isGuest() && !cert.id.startsWith('cert_')) {
-      try {
-        const blob = await this.courseService.downloadCertificateFile(cert.id);
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `Certificado_${cert.courseTitle.replace(/\s+/g, '_')}.txt`;
-        a.click();
-        URL.revokeObjectURL(url);
-        return;
-      } catch (e) {
-        console.warn('Error al descargar certificado del servidor, usando generación local:', e);
-      }
-    }
-
-    // Fallback/Generación local
-    const content = `
-RURAL-TECH EDUCA
-========================================
-CERTIFICADO DE FINALIZACIÓN
-========================================
-
-Se certifica que:
-${cert.studentName}
-
-Ha completado satisfactoriamente el curso:
-${cert.courseTitle}
-
-Área: ${this.getCategoryLabel(cert.category)}
-Instructor: ${cert.instructor}
-Fecha de emisión: ${this.formatDate(cert.issuedAt)}
-
-ID de Certificado: ${cert.id}
-
-========================================
-Rural-Tech Educa — Educación sin Límites
-soporte@ruraltech.org
-    `.trim();
-
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Certificado_${cert.courseTitle.replace(/\s+/g, '_')}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
+    await this.pdfGen.generateCertificatePdf(cert);
   }
 
   goToCourses(): void {

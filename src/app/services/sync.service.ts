@@ -23,13 +23,14 @@ export class SyncService {
   readonly syncQueue = signal<SyncAction[]>([]);
   readonly lastSyncTime = signal<string>(localStorage.getItem('rt_last_sync') || 'Nunca');
   
-  // Señales de espacio en disco (1.2GB / 5.0GB)
-  readonly usedSpace = signal<number>(1.2); // en GB
-  readonly maxSpace = signal<number>(5.0);  // en GB
+  // Señales de espacio en disco - se actualizan dinámicamente
+  readonly usedSpace = signal<number>(0); // en GB
+  readonly maxSpace = signal<number>(5.0);  // en GB (configurable)
 
   constructor() {
     this.initNetworkListeners();
     this.loadQueue();
+    this.updateStorageInfo();
 
     // Sincronizar automáticamente al pasar a estar en línea
     effect(() => {
@@ -37,6 +38,23 @@ export class SyncService {
         this.syncNow();
       }
     });
+  }
+
+  /**
+   * Calcula el espacio usado en IndexedDB y actualiza las señales
+   */
+  private async updateStorageInfo(): Promise<void> {
+    try {
+      if ('storage' in navigator && 'estimate' in navigator.storage) {
+        const estimate = await navigator.storage.estimate();
+        if (estimate.usage !== undefined) {
+          this.usedSpace.set(Number((estimate.usage / (1024 * 1024 * 1024)).toFixed(2)));
+        }
+      }
+    } catch (e) {
+      console.warn('No se pudo estimar el almacenamiento:', e);
+      this.usedSpace.set(0);
+    }
   }
 
   private initNetworkListeners(): void {
@@ -63,6 +81,13 @@ export class SyncService {
     this.isSyncing.set(true);
     const queue = this.syncQueue();
 
+    // Obtener o inicializar el nodo ID
+    let nodeId = localStorage.getItem('rt_node');
+    if (!nodeId) {
+      nodeId = 'RT-SEC-' + Math.floor(1000 + Math.random() * 8999);
+      localStorage.setItem('rt_node', nodeId);
+    }
+
     // Mapear las acciones locales al formato requerido por la API de FastAPI
     const acciones = queue.map(item => ({
       accion: item.action,
@@ -72,6 +97,10 @@ export class SyncService {
     try {
       const res = await firstValueFrom(
         this.http.post<any>(`${environment.apiUrl}/sincronizacion/sync`, {
+          nodo_id: nodeId,
+          almacenamiento_usado_gb: this.usedSpace(),
+          almacenamiento_max_gb: this.maxSpace(),
+          version_app: '1.0.0',
           acciones
         })
       );
@@ -102,6 +131,8 @@ export class SyncService {
       // Recargar datos y notificaciones sincronizados
       await this.courseService.syncCatalogAndInscriptions();
       await this.notifService.loadNotifications();
+      await this.courseService.syncLocalDownloadsToServer();
+      await this.updateStorageInfo();
       
     } catch (error) {
       console.error('Error durante la sincronización con el servidor:', error);
@@ -119,7 +150,7 @@ export class SyncService {
     await new Promise(resolve => setTimeout(resolve, 1000));
     await this.db.clear('courses');
     await this.db.clear('downloads');
-    this.usedSpace.set(0.4);
+    await this.updateStorageInfo();
     this.isSyncing.set(false);
   }
 }
