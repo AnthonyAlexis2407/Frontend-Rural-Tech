@@ -21,7 +21,7 @@ export interface DownloadedFile {
 })
 export class IndexedDbService {
   private readonly DB_NAME = 'rural_tech_db';
-  private readonly DB_VERSION = 1;
+  private readonly DB_VERSION = 2;
   private dbPromise: Promise<IDBPDatabase> | null = null;
 
   constructor() {
@@ -43,6 +43,10 @@ export class IndexedDbService {
           // Store local downloaded files list
           if (!db.objectStoreNames.contains('downloads')) {
             db.createObjectStore('downloads', { keyPath: 'name' });
+          }
+          // Store raw file blobs
+          if (!db.objectStoreNames.contains('files_data')) {
+            db.createObjectStore('files_data');
           }
           // Store actions to sync with server later
           if (!db.objectStoreNames.contains('sync_queue')) {
@@ -112,5 +116,22 @@ export class IndexedDbService {
 
   async deleteSyncAction(id: number): Promise<void> {
     await this.delete('sync_queue', id);
+  }
+
+  // --- RAW BLOBS HELPERS ---
+
+  async getFileBlob(fileName: string): Promise<Blob | undefined> {
+    const db = await this.initDb();
+    return db.get('files_data', fileName);
+  }
+
+  async saveFileBlob(fileName: string, blob: Blob): Promise<void> {
+    const db = await this.initDb();
+    await db.put('files_data', blob, fileName);
+  }
+
+  async deleteFileBlob(fileName: string): Promise<void> {
+    const db = await this.initDb();
+    await db.delete('files_data', fileName);
   }
 }

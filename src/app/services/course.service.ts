@@ -637,26 +637,83 @@ export class CourseService {
 
     this.downloadsInProgress.update(list => [...list, newDownload]);
 
-    const interval = setInterval(() => {
-      this.downloadsInProgress.update(list => {
-        return list.map(item => {
-          if (item.id === courseId) {
-            const nextProgress = Math.min(item.progress + 15, 100);
-            const sizeNum = parseFloat(totalSize);
-            const sizeDownloaded = `${Math.round((nextProgress / 100) * sizeNum)}MB`;
-            if (nextProgress === 100) {
-              clearInterval(interval);
-              setTimeout(() => this.completeDownload(courseId, title), 300);
-            }
-            return { ...item, progress: nextProgress, sizeDownloaded };
+    try {
+      const modules = await this.loadCourseModules(courseId);
+      const modulesWithUrl = modules.filter(m => m.contentUrl);
+      
+      let progressStep = 0;
+
+      if (modulesWithUrl.length > 0) {
+        for (const mod of modulesWithUrl) {
+          if (!mod.contentUrl) continue;
+
+          progressStep += (90 / modulesWithUrl.length);
+          this.downloadsInProgress.update(list => list.map(item => 
+             item.id === courseId ? { ...item, progress: progressStep } : item
+          ));
+
+          try {
+             const blob = await firstValueFrom(this.http.get(mod.contentUrl, { responseType: 'blob' }));
+             const fileExtension = mod.contentUrl.split('.').pop() || 'pdf';
+             const cleanTitle = mod.title.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+             const fileName = `${cleanTitle}_${courseId}.${fileExtension}`;
+             
+             await this.db.saveFileBlob(fileName, blob);
+             
+             const mbSize = (blob.size / (1024 * 1024)).toFixed(2);
+             const newFile: DownloadedFile = {
+               name: fileName,
+               size: mbSize + 'MB',
+               type: 'pdf',
+               downloadedAt: Date.now(),
+               courseId: courseId
+             };
+             await this.db.saveDownloadedFile(newFile);
+             
+             if (navigator.onLine && this.auth.isAuthenticated() && !this.auth.isGuest()) {
+               try {
+                 await firstValueFrom(
+                   this.http.post(`${environment.apiUrl}/archivos-descargados/`, {
+                     curso_id: courseId,
+                     nombre_archivo: fileName,
+                     tamano: newFile.size,
+                     tipo: 'pdf'
+                   })
+                 );
+               } catch (e) {}
+             }
+          } catch(e) {
+             console.error('Error descargando archivo:', mod.contentUrl, e);
           }
-          return item;
-        });
-      });
-    });
+        }
+      } else {
+        const mockBlob = new Blob(['No hay archivos reales en este curso.'], { type: 'text/plain' });
+        const fileName = `${title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_Offline.txt`;
+        await this.db.saveFileBlob(fileName, mockBlob);
+        
+        const newFile: DownloadedFile = {
+           name: fileName,
+           size: '0.01MB',
+           type: 'pdf',
+           downloadedAt: Date.now(),
+           courseId: courseId
+        };
+        await this.db.saveDownloadedFile(newFile);
+      }
+
+      this.downloadsInProgress.update(list => list.map(item => 
+         item.id === courseId ? { ...item, progress: 100 } : item
+      ));
+
+      setTimeout(() => this.completeDownloadState(courseId, title), 500);
+
+    } catch (e) {
+       console.error(e);
+       this.downloadsInProgress.update(list => list.filter(item => item.id !== courseId));
+    }
   }
 
-  private async completeDownload(courseId: string, title: string): Promise<void> {
+  private async completeDownloadState(courseId: string, title: string): Promise<void> {
     this.downloadsInProgress.update(list => list.filter(item => item.id !== courseId));
     
     this.courses.update(list => list.map(course => {
@@ -668,17 +725,6 @@ export class CourseService {
       return course;
     }));
 
-    const fileName = `${title.replace(/\s+/g, '_')}_Offline.pdf`;
-    const newFile: DownloadedFile = {
-      name: fileName,
-      size: '22.4MB',
-      type: 'pdf',
-      downloadedAt: Date.now(),
-      courseId: courseId
-    };
-    await this.db.saveDownloadedFile(newFile);
-
-    // Si está online, sincronizar con el servidor inmediatamente
     if (navigator.onLine && this.auth.isAuthenticated() && !this.auth.isGuest()) {
       try {
         await firstValueFrom(
@@ -686,16 +732,8 @@ export class CourseService {
             params: { descargado: true }
           })
         );
-        await firstValueFrom(
-          this.http.post(`${environment.apiUrl}/archivos-descargados/`, {
-            curso_id: courseId,
-            nombre_archivo: fileName,
-            tamano: '22.4MB',
-            tipo: 'pdf'
-          })
-        );
       } catch (e) {
-        console.warn('Error al guardar registro de descarga en el servidor:', e);
+        console.warn('Error al marcar curso como descargado en el servidor:', e);
       }
     }
 
@@ -707,6 +745,7 @@ export class CourseService {
     const courseId = file?.courseId;
 
     await this.db.deleteDownloadedFile(fileName);
+    await this.db.deleteFileBlob(fileName);
 
     if (navigator.onLine && this.auth.isAuthenticated() && !this.auth.isGuest()) {
       try {
