@@ -639,7 +639,8 @@ export class CourseService {
 
     try {
       const modules = await this.loadCourseModules(courseId);
-      const modulesWithUrl = modules.filter(m => m.contentUrl);
+      // Solo descargar si tiene URL y comienza con http (ignoramos JSONs de quizzes)
+      const modulesWithUrl = modules.filter(m => m.contentUrl && m.contentUrl.startsWith('http'));
       
       let progressStep = 0;
 

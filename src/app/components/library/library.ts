@@ -51,12 +51,19 @@ export class LibraryComponent {
   }
 
   async openFile(name: string): Promise<void> {
+    // Para evitar que el navegador bloquee la ventana emergente por ser asíncrono,
+    // abrimos la pestaña inmediatamente y luego le inyectamos el PDF.
+    let newWindow: Window | null = null;
+    if (name.endsWith('.pdf') || name.endsWith('.txt')) {
+      newWindow = window.open('about:blank', '_blank');
+    }
+
     const blob = await this.indexedDb.getFileBlob(name);
 
     if (blob) {
       const url = URL.createObjectURL(blob);
-      if (name.endsWith('.pdf') || name.endsWith('.txt')) {
-        window.open(url, '_blank');
+      if (newWindow) {
+        newWindow.location.href = url;
       } else {
         const a = document.createElement('a');
         a.href = url;
@@ -68,6 +75,7 @@ export class LibraryComponent {
       this.openMessage.set(this.ts.translate('library.opening') + ' ' + name + '...');
       setTimeout(() => this.openMessage.set(''), 3000);
     } else {
+      if (newWindow) newWindow.close();
       this.openMessage.set('Error: Archivo no encontrado en la memoria.');
       setTimeout(() => this.openMessage.set(''), 3000);
     }
